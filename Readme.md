@@ -1,6 +1,6 @@
 # 📋 Sistema de Examen en Línea — MVC
 
-Sistema de exámenes en línea desarrollado con el patrón **Modelo-Vista-Controlador (MVC)**, construido como práctica de Usabilidad y Accesibilidad en Sistemas MVC para PUCESE.
+Sistema de exámenes en línea desarrollado con el patrón **Modelo-Vista-Controlador (MVC)**, construido como práctica de Usabilidad y Accesibilidad en Sistemas MVC.
 
 ---
 
@@ -93,7 +93,7 @@ Antes de comenzar, asegúrate de tener instalado:
 ### Paso 1 — Levantar la base de datos
 
 ```bash
-cd SistemaMVC_fixed/backend
+cd SistemaMVC/backend
 docker-compose up -d
 ```
 
@@ -109,7 +109,7 @@ docker ps
 ### Paso 2 — Instalar dependencias del backend
 
 ```bash
-cd SistemaMVC_fixed/backend
+cd SistemaMVC_/backend
 pnpm install
 ```
 
@@ -160,7 +160,7 @@ docker exec -i mysql_exam mysql -uroot -proot --default-character-set=utf8mb4 ex
 ### Paso 5 — Iniciar el backend
 
 ```bash
-cd SistemaMVC_fixed/backend
+cd SistemaMVC/backend
 pnpm run dev
 ```
 
@@ -179,7 +179,7 @@ Salida esperada:
 Abre una **nueva terminal**:
 
 ```bash
-cd SistemaMVC_fixed/frontend
+cd SistemaMVC/frontend
 pnpm install
 ```
 
