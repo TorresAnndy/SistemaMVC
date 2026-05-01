@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS questions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  exam_id INT,
+  text TEXT,
+  FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
+);
