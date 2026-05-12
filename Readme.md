@@ -1,6 +1,6 @@
-# 📋 Sistema de Examen en Línea — MVC
+# 📋 Sistema de Examen Seguro — Desktop (Electron)
 
-Sistema de exámenes en línea desarrollado con el patrón **Modelo-Vista-Controlador (MVC)**, construido como práctica de Usabilidad y Accesibilidad en Sistemas MVC.
+Sistema de exámenes de alta seguridad desarrollado con el patrón **MVC**, convertido en una aplicación de escritorio utilizando **ElectronJS**. Incluye funciones de "Safe Browser" para prevenir el fraude durante las evaluaciones.
 
 ---
 
@@ -8,115 +8,59 @@ Sistema de exámenes en línea desarrollado con el patrón **Modelo-Vista-Contro
 
 | Capa | Tecnología |
 |------|-----------|
+| **Escritorio** | **ElectronJS** (Seguridad + Kiosk Mode) |
 | **Vista** | React 19 + TypeScript + Tailwind CSS + Vite |
-| **Controlador** | Node.js + Express.js |
+| **Controlador** | Node.js + Express.js (Embebido en la App) |
 | **Modelo** | MySQL 8 (Docker) |
-| **Autenticación** | JWT (jsonwebtoken) + bcryptjs |
-| **Gestor de paquetes** | pnpm |
+| **Autenticación** | JWT + bcryptjs |
 
 ---
 
-## 📁 Estructura del proyecto
+## 📁 Estructura del proyecto (Arquitectura Desktop)
 
 ```
-SistemaMVC_fixed/
+SistemaMVC/
 │
-├── backend/                        # Capa Controlador + Modelo
-│   ├── app.js                      # Punto de entrada del servidor Express
-│   ├── .env                        # Variables de entorno (puerto, DB, JWT)
-│   ├── docker-compose.yml          # Configuración del contenedor MySQL
-│   ├── migrate.js                  # Script ejecutor de migraciones SQL
-│   │
-│   ├── config/
-│   │   └── db.js                   # Conexión a la base de datos MySQL
-│   │
-│   ├── controllers/
-│   │   ├── authController.js       # Lógica de registro e inicio de sesión
-│   │   └── examController.js       # Lógica de listar, obtener y calificar exámenes
-│   │
-│   ├── middleware/
-│   │   └── authMiddleware.js       # Verificación de token JWT en rutas protegidas
-│   │
-│   ├── routes/
-│   │   ├── authRoutes.js           # POST /api/auth/register, POST /api/auth/login
-│   │   └── examRoutes.js           # GET /api/exams, GET /api/exams/:id, POST /api/exams/submit
-│   │
-│   ├── migrations/                 # Scripts SQL ejecutados en orden
-│   │   ├── 001_create_users.sql
-│   │   ├── 002_create_exams.sql
-│   │   ├── 003_exams.sql
-│   │   ├── 004_questions.sql
-│   │   └── 005_options.sql
-│   │
-│   └── seed/
-│       ├── users.js                # Crea el usuario de prueba (admin@test.com)
-│       └── seedData.sql            # Inserta exámenes, preguntas y opciones
+├── electron/                       # Configuración Desktop
+│   ├── main.js                     # Proceso principal (Kiosk, Backend Spawner)
+│   └── preload.js                  # Puente seguro IPC (Seguridad de API)
 │
-└── frontend/                       # Capa Vista
-    ├── index.html                  # HTML raíz con lang="es" y meta accesibles
-    ├── .env                        # VITE_API_URL apuntando al backend
-    │
-    └── src/
-        ├── main.tsx                # Punto de entrada React
-        ├── App.tsx                 # Definición de rutas (React Router)
-        │
-        ├── api/
-        │   └── api.js              # Funciones fetch() hacia el backend con JWT
-        │
-        ├── context/
-        │   └── AuthContext.jsx     # Estado global de autenticación + persistencia
-        │
-        ├── components/
-        │   ├── Layout.jsx          # Navbar, skip link, estructura base de página
-        │   └── PrivateRoute.jsx    # Protección de rutas para usuarios no autenticados
-        │
-        └── pages/
-            ├── Login.jsx           # Pantalla de inicio de sesión
-            ├── ExamList.jsx        # Lista de exámenes disponibles
-            └── ExamDetail.jsx      # Vista del examen + calificación de resultado
+├── backend/                        # API REST (Embebida en Electron)
+│   ├── app.js                      # Servidor Express
+│   └── migrations/                 # Base de datos
+│
+└── frontend/                       # Interfaz de Usuario
+    ├── src/hooks/
+    │   └── useExamSecurity.js      # Hook de detección de fraude
+    └── src/pages/
+        └── ExamDetail.jsx          # Examen con modo seguro activo
 ```
 
 ---
 
 ## ⚙️ Requisitos previos
 
-Antes de comenzar, asegúrate de tener instalado:
-
-- [Node.js](https://nodejs.org/) v18 o superior
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [pnpm](https://pnpm.io/) — instalar con `npm install -g pnpm`
+- [Node.js](https://nodejs.org/) v20 o superior
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (para MySQL)
+- [pnpm](https://pnpm.io/)
 
 ---
 
-## 🚀 Pasos para ejecutar el proyecto
+## 🚀 Cómo ejecutar el proyecto (Modo Desktop)
 
 ### Paso 1 — Levantar la base de datos
-
 ```bash
-cd SistemaMVC/backend
+cd backend
 docker-compose up -d
 ```
 
-Espera 10–15 segundos. Verifica que el contenedor esté corriendo:
-
-```bash
-docker ps
-# Debes ver: mysql_exam   Up
-```
-
----
-
 ### Paso 2 — Instalar dependencias del backend
-
 ```bash
-cd SistemaMVC_/backend
+cd backend
 pnpm install
 ```
 
----
-
 ### Paso 3 — Ejecutar migraciones (crea las tablas)
-
 ```bash
 pnpm run migrate
 ```
@@ -129,19 +73,14 @@ Salida esperada:
 🚀 Base de datos actualizada
 ```
 
----
-
 ### Paso 4 — Cargar datos de prueba (seed)
-
 **Primero los usuarios:**
 ```bash
 pnpm run seed
 ```
 
 **Luego los exámenes, preguntas y opciones:**
-
-> ⚠️ En **PowerShell** usa este comando (el operador `<` no funciona en PS):
-
+> ⚠️ En **PowerShell** usa este comando:
 ```powershell
 # Copiar el archivo al contenedor
 docker cp seed/seedData.sql mysql_exam:/seedData.sql
@@ -157,153 +96,56 @@ docker exec -i mysql_exam mysql -uroot -proot --default-character-set=utf8mb4 ex
 
 ---
 
-### Paso 5 — Iniciar el backend
-
+### Paso 5 — Ejecutar en Desarrollo
+Para ver los cambios en tiempo real (Vite + Electron):
 ```bash
-cd SistemaMVC/backend
-pnpm run dev
+cd frontend
+# Inicia el frontend, el backend embebido y electron
+pnpm run electron:dev
 ```
 
-Salida esperada:
-```
-🟢 MySQL conectado
-🚀 Backend listo en puerto 3000
-```
-
-**Deja esta terminal abierta.**
-
----
-
-### Paso 6 — Instalar dependencias del frontend
-
-Abre una **nueva terminal**:
-
+### Paso 6 — Generar el Instalador (.exe)
+Para crear el archivo ejecutable para Windows:
 ```bash
-cd SistemaMVC/frontend
-pnpm install
+cd frontend
+pnpm run electron:build
 ```
+El instalador generado aparecerá en la carpeta `dist-electron/`.
+
 
 ---
 
-### Paso 7 — Iniciar el frontend
+## 🔒 Funciones de Seguridad (Safe Browser)
 
-```bash
-pnpm run dev
-```
+La aplicación implementa medidas rigurosas para garantizar la integridad del examen:
 
-Salida esperada:
-```
-VITE ready in 300ms
-➜  Local:   http://localhost:5173/
-```
-
----
-
-### Paso 8 — Abrir en el navegador
-
-Ingresa a **http://localhost:5173**
-
-Credenciales de prueba:
-```
-Email:    admin@test.com
-Password: 123456
-```
+1.  **Modo Kiosco**: Al iniciar un examen, la aplicación entra en pantalla completa y bloquea el uso de la tecla Windows y Alt+Tab.
+2.  **Detección de Pérdida de Foco**: Si el estudiante intenta cambiar de ventana o minimizar la aplicación, el sistema:
+    *   Registra el incidente con marca de tiempo.
+    *   Muestra una advertencia nativa del sistema.
+    *   Bloquea la interfaz con un overlay de advertencia.
+3.  **Límite de Advertencias**: Tras **3 intentos** de salir del examen, este se cierra automáticamente y el estudiante es retirado de la prueba.
+4.  **Bloqueo de Hardware/Teclado**:
+    *   Desactiva Clic Derecho.
+    *   Bloquea `F12` (DevTools).
+    *   Bloquea `Ctrl+R` (Recargar) y `Ctrl+W` (Cerrar).
+5.  **Backend Embebido**: El servidor corre dentro de la aplicación, eliminando la necesidad de configurar servidores externos por parte del alumno.
 
 ---
 
-## 🖥️ Resumen de terminales
+## 🖥️ Resumen de comandos útiles
 
-| Terminal | Directorio | Comando | Qué hace |
-|----------|-----------|---------|----------|
-| 1 | `backend/` | `docker-compose up -d` | Base de datos MySQL en Docker |
-| 2 | `backend/` | `pnpm run dev` | API REST en `http://localhost:3000` |
-| 3 | `frontend/` | `pnpm run dev` | Interfaz web en `http://localhost:5173` |
-
----
-
-## 🔌 Endpoints de la API
-
-| Método | Ruta | Protegida | Descripción |
-|--------|------|-----------|-------------|
-| `POST` | `/api/auth/register` | No | Registrar nuevo usuario |
-| `POST` | `/api/auth/login` | No | Iniciar sesión, retorna JWT |
-| `GET` | `/api/exams` | ✅ Sí | Listar todos los exámenes |
-| `GET` | `/api/exams/:id` | ✅ Sí | Obtener examen con preguntas y opciones |
-| `POST` | `/api/exams/submit` | ✅ Sí | Enviar respuestas y recibir calificación |
-
-Las rutas protegidas requieren el header:
-```
-Authorization: Bearer <token>
-```
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm run electron:dev` | Inicia el entorno de desarrollo completo. |
+| `pnpm run electron:preview` | Prueba la versión compilada dentro de Electron. |
+| `pnpm run electron:build` | Genera el instalador `.exe` para distribución. |
 
 ---
 
-## 🗄️ Variables de entorno
-
-**`backend/.env`**
-```env
-JWT_SECRET=mi_clave_super_segura_123
-JWT_EXPIRES=2h
-PORT=3000
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=root
-DB_NAME=exam_db
-DB_PORT=3307
-```
-
-**`frontend/.env`**
-```env
-VITE_API_URL=http://localhost:3000/api
-```
+## ♿ Accesibilidad
+Se mantiene el cumplimiento de accesibilidad (WCAG) con skip links, navegación por teclado y soporte para lectores de pantalla, incluso dentro del contenedor de Electron.
 
 ---
 
-## 🐛 Solución de problemas comunes
-
-**Error: "MySQL conectando..." / no conecta**
-El contenedor todavía está iniciando. Espera 15 segundos y vuelve a correr `pnpm run dev` en el backend.
-
-**Error: Puerto 3307 ocupado**
-Edita `docker-compose.yml` y cambia `"3307:3306"` a `"3308:3306"`. Luego actualiza `DB_PORT=3308` en `backend/.env`.
-
-**Error: "pnpm: command not found"**
-```bash
-npm install -g pnpm
-```
-
-**Textos con caracteres extraños (Â¿, Ã¡, etc.)**
-Al cargar el seed, asegúrate de incluir `--default-character-set=utf8mb4` en el comando de Docker.
-
-**Error: "Cannot add or update a child row" (foreign key)**
-Las tablas tienen datos inconsistentes de intentos anteriores. Limpia con:
-```powershell
-docker exec -it mysql_exam mysql -uroot -proot exam_db -e "SET FOREIGN_KEY_CHECKS=0; TRUNCATE TABLE options; TRUNCATE TABLE questions; TRUNCATE TABLE exams; SET FOREIGN_KEY_CHECKS=1;"
-```
-Luego vuelve a ejecutar el seed del Paso 4.
-
----
-
-## 🔒 Seguridad implementada
-
-- Contraseñas encriptadas con **bcrypt** (salt rounds = 10)
-- Autenticación por **JWT** con expiración de 2 horas
-- Las respuestas correctas (`is_correct`) **nunca se exponen** al cliente
-- Mensajes de error genéricos en login para prevenir enumeración de usuarios
-- Todas las rutas de exámenes protegidas por middleware JWT
-
----
-
-## ♿ Accesibilidad implementada
-
-- `role="alert"` + `aria-live` en mensajes de error (no solo color)
-- `aria-label` descriptivos en todos los botones
-- `<fieldset>` + `<legend>` en grupos de opciones radio
-- Skip link "Ir al contenido principal" para navegación por teclado
-- Focus rings visibles en todos los elementos interactivos
-- `lang="es"` en el HTML raíz
-- Indicador de progreso de preguntas respondidas
-
----
-
-*Práctica: Usabilidad y Accesibilidad en Sistemas MVC — PUCESE*
+*Proyecto: Práctica de Usabilidad y Accesibilidad — Sistemas MVC — PUCESE*

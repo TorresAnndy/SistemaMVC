@@ -4,4 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Necesario para que Electron cargue assets desde file://
+  base: './',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
 })
